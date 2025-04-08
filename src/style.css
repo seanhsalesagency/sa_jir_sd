@@ -181,3 +181,11 @@ footer {
         padding: 12px 15px;
      }
 }
+/* Add spacing ABOVE group headings, except the very first one */
+.link-section h2 {
+    margin-top: 35px; /* Adjust spacing as needed */
+}
+
+.link-section h2:first-of-type {
+    margin-top: 0; /* Remove extra space above the first heading */
+}
