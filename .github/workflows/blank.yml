@@ -25,7 +25,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './'  # deploy from repo root
+          path: './src'  # deploy from repo root
 
   deploy:
     environment:
