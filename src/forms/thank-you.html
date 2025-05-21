@@ -1,3 +1,27 @@
-if (result.ticket) {
-  window.location.href = `/forms/thank-you.html?ticket=${result.ticket}`;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Request Submitted</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Thank you for your submission!</h1>
+    <p>Your ticket has been created:</p>
+    <p><a id="ticketLink" href="#">View your Jira ticket</a></p>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const ticketId = urlParams.get('ticket');
+    const link = document.getElementById('ticketLink');
+    if (ticketId) {
+      link.href = `https://brainyconcepts.atlassian.net/browse/${ticketId}`;
+      link.textContent = `View Ticket: ${ticketId}`;
+    } else {
+      link.textContent = "No ticket ID found.";
+    }
+  </script>
+</body>
+</html>
