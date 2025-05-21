@@ -2,69 +2,138 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>New Employee Setup</title>
-  <link rel="stylesheet" href="../style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to right, #a8edea, #fed6e3);
+      display: flex;
+      justify-content: center;
+      padding: 40px;
+      margin: 0;
+    }
+
+    .form-wrapper {
+      background-color: #fff;
+      padding: 32px;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 24px;
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin: 20px 0 6px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .submit-button {
+      margin-top: 24px;
+      padding: 12px 24px;
+      background-color: #0052cc;
+      color: #fff;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .submit-button:hover {
+      background-color: #0065ff;
+    }
+
+    .note {
+      font-size: 13px;
+      margin-top: 10px;
+      color: #5e6c84;
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <div class="logo">SmartBrands Help Center</div>
-  </header>
 
-  <main>
-    <h2>New Employee Setup</h2>
-    <form id="setupForm">
-      <label for="employeeName">Full Name</label>
-      <input type="text" name="employeeName" id="employeeName" required />
+  <form class="form-wrapper" id="employeeForm">
+    <h1>New Employee Setup</h1>
 
-      <label for="startDate">Start Date</label>
-      <input type="date" name="startDate" id="startDate" required />
+    <label for="company">Company *</label>
+    <select id="company" name="company" required>
+      <option value="" disabled selected>Select a company</option>
+      <option>Sales Agency</option>
+      <option>Traders Agency</option>
+      <option>LeadMark</option>
+      <option>Brainy Concepts</option>
+      <option>TrafficGrid</option>
+      <option>Inbox Mailers</option>
+      <option>Smart Recognition</option>
+    </select>
 
-      <label for="department">Department</label>
-      <input type="text" name="department" id="department" required />
+    <label for="employeeName">Employee Name and Position *</label>
+    <input type="text" id="employeeName" name="employeeName" required />
 
-      <label for="email">Work Email</label>
-      <input type="email" name="email" id="email" required />
+    <label for="employeeEmail">Employee Email *</label>
+    <input type="email" id="employeeEmail" name="employeeEmail" required />
 
-      <label for="equipment">Required Equipment</label>
-      <textarea name="equipment" id="equipment" rows="4" placeholder="e.g. MacBook, Monitor, Keyboard" required></textarea>
+    <label for="description">Description *</label>
+    <textarea id="description" name="description" required></textarea>
 
-      <button type="submit">Submit Request</button>
-    </form>
-  </main>
+    <label for="startDate">Employee Start Date *</label>
+    <input type="date" id="startDate" name="startDate" required />
+
+    <button type="submit" class="submit-button">Submit</button>
+    <div class="note">This form creates a Jira ticket via our internal workflow.</div>
+  </form>
 
   <script>
-    document.getElementById('setupForm').addEventListener('submit', async function (e) {
+    document.getElementById("employeeForm").addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const data = { formType: "new-employee-setup" };
-      for (const element of e.target.elements) {
-        if (element.name) {
-          data[element.name] = element.value;
-        }
-      }
+      const data = {
+        formType: "new-employee-setup",
+        company: document.getElementById("company").value,
+        name: document.getElementById("employeeName").value,
+        email: document.getElementById("employeeEmail").value,
+        description: document.getElementById("description").value,
+        startDate: document.getElementById("startDate").value
+      };
 
-      const res = await fetch("https://phtaak5cbzmgvssvli6sxirwpm0xbwcm.lambda-url.us-east-1.on.aws/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
+      try {
+        const res = await fetch("https://your-lambda-function-url", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
 
-      if (res.redirected) {
-        window.location.href = res.url;
-      } else {
-        try {
+        if (res.redirected) {
+          window.location.href = res.url;
+        } else {
           const result = await res.json();
-          if (result.key) {
-            window.location.href = `https://brainyconcepts.atlassian.net/browse/${result.key}`;
-          } else {
-            alert("Form submitted, but ticket link not returned.");
-          }
-        } catch (err) {
-          alert("Submission failed. Please try again.");
+          alert("Form submitted, but no ticket URL returned.\n\n" + JSON.stringify(result));
         }
+      } catch (err) {
+        alert("Error submitting the form: " + err.message);
       }
     });
   </script>
+
 </body>
 </html>
