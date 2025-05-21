@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Purchase Request</title>
+  <link rel="stylesheet" href="../style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header><div class="logo">SmartBrands Help Center</div></header>
+  <main>
+    <h2>Something Needs to be Purchased</h2>
+    <form id="purchaseForm">
+      <label>Item Description
+        <input type="text" name="item" required />
+      </label>
+      <label>Quantity
+        <input type="number" name="quantity" required />
+      </label>
+      <label>Estimated Cost
+        <input type="text" name="cost" />
+      </label>
+      <label>Business Justification
+        <textarea name="justification" rows="4" required></textarea>
+      </label>
+      <button type="submit">Submit</button>
+    </form>
+  </main>
+  <script>
+    document.getElementById('purchaseForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const data = { formType: "something-needs-to-be-purchased" };
+      for (const el of e.target.elements) if (el.name) data[el.name] = el.value;
+      const res = await fetch("https://phtaak5cbzmgvssvli6sxirwpm0xbwcm.lambda-url.us-east-1.on.aws/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      if (res.redirected) window.location.href = res.url;
+      else alert("Request submitted.");
+    });
+  </script>
+</body>
+</html>
