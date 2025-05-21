@@ -2,39 +2,56 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>New Employee Setup</title>
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <div class="form-container">
-    <h1>New Employee Setup</h1>
-    <form id="employeeForm">
-      <label for="company">Company</label>
-      <select id="company" required>
-        <option value="">Select company</option>
-        <option>Sales Agency</option>
-        <option>Traders Agency</option>
-        <option>LeadMark</option>
-        <option>Brainy Concepts</option>
-        <option>TrafficGrid</option>
-        <option>Inbox Mailers</option>
-        <option>Smart Recognition</option>
-      </select>
+  <div class="form-wrapper">
+    <div class="form-card">
+      <h1>New Employee Setup</h1>
+      <p class="form-description">Submit a request to onboard a new employee.</p>
 
-      <label for="name">Employee Name and Position</label>
-      <input type="text" id="name" required />
+      <form id="employeeForm" class="styled-form">
+        <div class="form-group">
+          <label for="company">Company<span class="required">*</span></label>
+          <select id="company" name="company" required>
+            <option value="">Select company</option>
+            <option>Sales Agency</option>
+            <option>Traders Agency</option>
+            <option>LeadMark</option>
+            <option>Brainy Concepts</option>
+            <option>TrafficGrid</option>
+            <option>Inbox Mailers</option>
+            <option>Smart Recognition</option>
+          </select>
+        </div>
 
-      <label for="email">Employee Email</label>
-      <input type="email" id="email" required />
+        <div class="form-group">
+          <label for="name">Employee Name and Position<span class="required">*</span></label>
+          <input type="text" id="name" name="name" placeholder="e.g., John Doe – Marketing Manager" required />
+        </div>
 
-      <label for="description">Description</label>
-      <textarea id="description" rows="4" required></textarea>
+        <div class="form-group">
+          <label for="email">Employee Email<span class="required">*</span></label>
+          <input type="email" id="email" name="email" required />
+        </div>
 
-      <label for="startDate">Employee Start Date</label>
-      <input type="date" id="startDate" required />
+        <div class="form-group">
+          <label for="description">Description<span class="required">*</span></label>
+          <textarea id="description" name="description" rows="5" required></textarea>
+        </div>
 
-      <button type="submit">Submit</button>
-    </form>
+        <div class="form-group">
+          <label for="startDate">Employee Start Date<span class="required">*</span></label>
+          <input type="date" id="startDate" name="startDate" required />
+        </div>
+
+        <div class="form-group">
+          <button type="submit" class="submit-button">Submit</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <script>
@@ -60,6 +77,7 @@
         const result = await response.json();
 
         if (result.ticket) {
+          // Redirect to thank-you page with ticket ID
           window.location.href = `/forms/thank-you.html?ticket=${result.ticket}`;
         } else {
           alert("Form submitted, but no ticket URL returned.\n\n" + JSON.stringify(result));
@@ -73,3 +91,4 @@
   </script>
 </body>
 </html>
+
