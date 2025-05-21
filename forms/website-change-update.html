@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Website Change/Update</title>
+  <link rel="stylesheet" href="../style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header><div class="logo">SmartBrands Help Center</div></header>
+  <main>
+    <h2>Website Change/Update</h2>
+    <form id="webForm">
+      <label>Page or Feature
+        <input type="text" name="page" required />
+      </label>
+      <label>Requested Update
+        <textarea name="updateDesc" rows="4" required></textarea>
+      </label>
+      <label>Requester
+        <input type="text" name="requester" />
+      </label>
+      <button type="submit">Submit</button>
+    </form>
+  </main>
+  <script>
+    document.getElementById('webForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const data = { formType: "website-change-update" };
+      for (const el of e.target.elements) if (el.name) data[el.name] = el.value;
+      const res = await fetch("https://phtaak5cbzmgvssvli6sxirwpm0xbwcm.lambda-url.us-east-1.on.aws/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      if (res.redirected) window.location.href = res.url;
+      else alert("Request submitted.");
+    });
+  </script>
+</body>
+</html>
