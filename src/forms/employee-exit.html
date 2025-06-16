@@ -1,44 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
   <title>Employee Exit</title>
-  <link rel="stylesheet" href="../style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-  <header><div class="logo">SmartBrands Help Center</div></header>
-  <main>
+  <div class="form-container">
     <h2>Employee Exit</h2>
-    <form id="exitForm">
-      <label>Employee Name
-        <input type="text" name="employeeName" required />
-      </label>
-      <label>Last Working Day
-        <input type="date" name="lastDay" required />
-      </label>
-      <label>Manager Name
-        <input type="text" name="manager" required />
-      </label>
-      <label>Equipment to Collect
-        <textarea name="equipment" rows="3"></textarea>
-      </label>
+    <form id="form">
+      <input type="hidden" id="formType" value="employee-exit">
+      <label>Company:</label>
+      <select id="company">
+        <option>Sales Agency</option>
+        <option>Traders Agency</option>
+        <option>LeadMark</option>
+        <option>Brainy Concepts</option>
+        <option>TrafficGrid</option>
+        <option>Inbox Mailers</option>
+        <option>Smart Recognition</option>
+      </select>
+      <label>Employee Name and Position:</label>
+      <input type="text" id="name" required>
+      <label>Employee Email:</label>
+      <input type="email" id="email" required>
+      <label>Exit Date:</label>
+      <input type="date" id="exitDate" required>
+      <label>Description:</label>
+      <textarea id="description" required></textarea>
       <button type="submit">Submit</button>
     </form>
-  </main>
+  </div>
   <script>
-    document.getElementById('exitForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const data = { formType: "employee-exit" };
-      for (const el of e.target.elements) if (el.name) data[el.name] = el.value;
-      const res = await fetch("https://phtaak5cbzmgvssvli6sxirwpm0xbwcm.lambda-url.us-east-1.on.aws/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
-      if (res.redirected) window.location.href = res.url;
-      else alert("Request submitted.");
-    });
-  </script>
-</body>
-</html>
+    const form = document.getElementById('form');
+    form.addEventListener('submit', asy
