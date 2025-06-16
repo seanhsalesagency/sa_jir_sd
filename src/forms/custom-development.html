@@ -1,31 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Custom Development</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Custom Development Request</title>
   <link rel="stylesheet" href="../style.css">
-  <style>
-    /* exact style from new-employee-setup.html */
-  </style>
+  <style> /* exactly as new-employee-setup.html style provided by you */ </style>
 </head>
 <body>
-<div class="form-wrapper">
-  <h1>Custom Development</h1>
-  <form id="form">
-    <input type="hidden" id="formType" value="custom-development">
-    <label>Company *</label>
-    <select id="company"><option>Sales Agency</option><option>Traders Agency</option></select>
-    <label>Project Name *</label>
-    <input type="text" id="projectName" required />
-    <label>Description *</label>
-    <textarea id="description" required></textarea>
-    <button>Submit</button>
-  </form>
-</div>
+  <div class="form-wrapper">
+    <img src="https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png" width="32"/>
+    <h1>Custom Development Request</h1>
+    <form id="customForm">
+      <label>Company *</label>
+      <select id="company" required>
+        <option disabled selected>Select a company</option>
+        <option>Sales Agency</option>
+        <option>Traders Agency</option>
+      </select>
+
+      <label>Project Name *</label>
+      <input id="projectName" required/>
+
+      <label>Description *</label>
+      <textarea id="description" required></textarea>
+
+      <button type="submit">Submit</button>
+    </form>
+  </div>
 <script>
-document.getElementById('form').onsubmit=async(e)=>{
+document.getElementById('customForm').onsubmit=async e=>{
   e.preventDefault();
-  const res=await fetch("YOUR_LAMBDA_URL",{method:'POST',headers:{"Content-Type":"application/json"},
-  body:JSON.stringify({formType:'custom-development',company:company.value,projectName:projectName.value,description:description.value})});
+  const res=await fetch("YOUR_LAMBDA_URL",{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({formType:"custom-development",company:company.value,projectName:projectName.value,description:description.value})
+  });
   const json=await res.json();
   if(json.ticket){location=`thank-you.html?ticket=${json.ticket}`;}
 };
