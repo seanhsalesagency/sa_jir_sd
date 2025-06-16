@@ -1,27 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Request Submitted</title>
-  <link rel="stylesheet" href="/style.css" />
+    <meta charset="UTF-8">
+    <title>Thank You - Request Submitted</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        .ticket-link {
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        .ticket-link a {
+            color: #0052CC;
+            text-decoration: none;
+        }
+        .ticket-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Thank you for your submission!</h1>
-    <p>Your ticket has been created:</p>
-    <p><a id="ticketLink" href="#">View your Jira ticket</a></p>
-  </div>
+    <div class="container">
+        <h2>Thank you for your submission!</h2>
+        <p>Your request has been successfully submitted.</p>
+        <div class="ticket-link" id="ticketLink"></div>
+    </div>
 
-  <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const ticketId = urlParams.get('ticket');
-    const link = document.getElementById('ticketLink');
-    if (ticketId) {
-      link.href = `https://brainyconcepts.atlassian.net/browse/${ticketId}`;
-      link.textContent = `View Ticket: ${ticketId}`;
-    } else {
-      link.textContent = "No ticket ID found.";
-    }
-  </script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const ticketId = urlParams.get('ticket');
+
+        if (ticketId) {
+            const ticketLink = document.getElementById('ticketLink');
+            ticketLink.innerHTML = `
+                You can track your request here:<br>
+                <a href="https://brainyconcepts.atlassian.net/browse/${ticketId}" target="_blank">
+                    ${ticketId}
+                </a>
+            `;
+        } else {
+            document.getElementById('ticketLink').innerHTML = "Ticket information not available.";
+        }
+    </script>
 </body>
 </html>
