@@ -1,40 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Report an Issue</title>
-  <link rel="stylesheet" href="../style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <title>Report Something Broken</title>
+  <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-  <header><div class="logo">SmartBrands Help Center</div></header>
-  <main>
-    <h2>Something Is Broken</h2>
-    <form id="bugForm">
-      <label>System or Tool
-        <input type="text" name="system" required />
-      </label>
-      <label>Description of Issue
-        <textarea name="issueDesc" rows="4" required></textarea>
-      </label>
-      <label>Urgency (Low/Medium/High)
-        <input type="text" name="urgency" />
-      </label>
+  <div class="form-container">
+    <h2>Report Something Broken</h2>
+    <form id="form">
+      <input type="hidden" id="formType" value="something-is-broken">
+      <label>Company:</label>
+      <select id="company">
+        <option>Sales Agency</option>
+        <option>Traders Agency</option>
+        <option>LeadMark</option>
+        <option>Brainy Concepts</option>
+        <option>TrafficGrid</option>
+        <option>Inbox Mailers</option>
+        <option>Smart Recognition</option>
+      </select>
+      <label>Issue Description:</label>
+      <textarea id="description" required></textarea>
       <button type="submit">Submit</button>
     </form>
-  </main>
+  </div>
   <script>
-    document.getElementById('bugForm').addEventListener('submit', async function(e) {
+    const form = document.getElementById('form');
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const data = { formType: "something-is-broken" };
-      for (const el of e.target.elements) if (el.name) data[el.name] = el.value;
-      const res = await fetch("https://phtaak5cbzmgvssvli6sxirwpm0xbwcm.lambda-url.us-east-1.on.aws/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+      const response = await fetch("YOUR_LAMBDA_URL", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          formType: document.getElementById('formType').value,
+          company: document.getElementById('company').value,
+          description: document.getElementById('description').value
+        })
       });
-      if (res.redirected) window.location.href = res.url;
-      else alert("Request submitted.");
+      const result = await response.json();
+      if (result.ticket) {
+        window.location.href = `/src/thank-you.html?ticket=${result.ticket}`;
+      }
     });
   </script>
 </body>
