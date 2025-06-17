@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Data Import/Export</title>
-  <link rel="stylesheet" href="../style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-   <style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Data Import/Export Request</title>
+  <style>
     body {
       font-family: "Segoe UI", sans-serif;
       background: linear-gradient(135deg, #56ccf2, #2f80ed);
@@ -36,59 +35,5 @@
       width: 100%;
       padding: 10px;
       font-size: 16px;
-      border: 1px solid #DFE1E6;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-    textarea {
-      height: 120px;
-      resize: vertical;
-    }
-    button {
-      margin-top: 24px;
-      background-color: #0052CC;
-      color: #fff;
-      padding: 10px 16px;
-      font-size: 16px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0065FF;
-    }
-  </style>
-</head>
-<body>
-  <header><div class="logo">SmartBrands Help Center</div></header>
-  <main>
-    <h2>Data Import / Export / Hosting</h2>
-    <form id="dataForm">
-      <label>Request Type (Import / Export / Upload / Host)
-        <input type="text" name="requestType" required />
-      </label>
-      <label>Data Format / File Type
-        <input type="text" name="fileType" />
-      </label>
-      <label>Description
-        <textarea name="description" rows="4" required></textarea>
-      </label>
-      <button type="submit">Submit</button>
-    </form>
-  </main>
-  <script>
-    document.getElementById('dataForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const data = { formType: "data-import-export-upload-host" };
-      for (const el of e.target.elements) if (el.name) data[el.name] = el.value;
-      const res = await fetch("https://phtaak5cbzmgvssvli6sxirwpm0xbwcm.lambda-url.us-east-1.on.aws/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
-      if (res.redirected) window.location.href = res.url;
-      else alert("Request submitted.");
-    });
-  </script>
-</body>
-</html>
+      border: 1px solid #D
+
