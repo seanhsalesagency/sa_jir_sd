@@ -35,5 +35,79 @@
       width: 100%;
       padding: 10px;
       font-size: 16px;
-      border: 1px solid #D
+      border: 1px solid #DFE1E6;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    textarea {
+      height: 120px;
+      resize: vertical;
+    }
+    button {
+      margin-top: 24px;
+      background-color: #0052CC;
+      color: #fff;
+      padding: 10px 16px;
+      font-size: 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0065FF;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-wrapper">
+    <img src="https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png" width="32" style="margin-bottom:10px;"/>
+    <h1>Data Import / Export / Hosting</h1>
+
+    <form id="dataForm">
+      <label for="requestType">Request Type (Import / Export / Upload / Host) *</label>
+      <input id="requestType" type="text" required />
+
+      <label for="fileType">Data Format / File Type *</label>
+      <input id="fileType" type="text" required />
+
+      <label for="description">Description *</label>
+      <textarea id="description" required></textarea>
+
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('dataForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const data = {
+        formType: "data-import-export-upload-host",
+        requestType: document.getElementById('requestType').value,
+        fileType: document.getElementById('fileType').value,
+        description: document.getElementById('description').value,
+      };
+
+      try {
+        const res = await fetch("https://phtaak5cbzmgvssvli6sxirwpm0xbwcm.lambda-url.us-east-1.on.aws/", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+
+        if(result.ticket) {
+          window.location.href = `/forms/thank-you.html?ticket=${result.ticket}`;
+        } else {
+          alert("Form submitted, but no ticket URL returned.\n\n" + JSON.stringify(result));
+        }
+      } catch (err) {
+        alert("Error submitting form:\n\n" + err.message);
+      }
+    });
+  </script>
+</body>
+</html>
+
 
