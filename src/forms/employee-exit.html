@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Employee Exit</title>
-  <link rel="stylesheet" href="../style.css">
-   <style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Employee Exit Form</title>
+  <style>
     body {
       font-family: "Segoe UI", sans-serif;
       background: linear-gradient(135deg, #56ccf2, #2f80ed);
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
     }
     .form-wrapper {
       background: #fff;
@@ -38,32 +38,27 @@
       border-radius: 4px;
       box-sizing: border-box;
     }
-    textarea {
-      height: 120px;
-      resize: vertical;
-    }
+    textarea { height: 120px; resize: vertical; }
     button {
       margin-top: 24px;
       background-color: #0052CC;
       color: #fff;
       padding: 10px 16px;
       font-size: 16px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
+      border: none; border-radius: 4px; cursor: pointer;
     }
-    button:hover {
-      background-color: #0065FF;
-    }
+    button:hover { background-color: #0065FF; }
   </style>
 </head>
 <body>
-  <div class="form-container">
-    <h2>Employee Exit</h2>
-    <form id="form">
-      <input type="hidden" id="formType" value="employee-exit">
-      <label>Company:</label>
-      <select id="company">
+  <div class="form-wrapper">
+    <img src="https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png" width="32" style="margin-bottom:10px;"/>
+    <h1>Employee Exit Form</h1>
+
+    <form id="exitForm">
+      <label for="company">Company *</label>
+      <select id="company" required>
+        <option value="" disabled selected>Select a company</option>
         <option>Sales Agency</option>
         <option>Traders Agency</option>
         <option>LeadMark</option>
@@ -72,36 +67,51 @@
         <option>Inbox Mailers</option>
         <option>Smart Recognition</option>
       </select>
-      <label>Employee Name and Position:</label>
-      <input type="text" id="name" required>
-      <label>Employee Email:</label>
-      <input type="email" id="email" required>
-      <label>Exit Date:</label>
-      <input type="date" id="exitDate" required>
-      <label>Description:</label>
+
+      <label for="name">Employee Name and Position *</label>
+      <input type="text" id="name" required/>
+
+      <label for="email">Employee Email *</label>
+      <input type="email" id="email" required/>
+
+      <label for="exitDate">Exit Date *</label>
+      <input type="date" id="exitDate" required/>
+
+      <label for="description">Description *</label>
       <textarea id="description" required></textarea>
+
       <button type="submit">Submit</button>
     </form>
   </div>
+
   <script>
-    const form = document.getElementById('form');
-    form.addEventListener('submit', async (e) => {
+    document.getElementById('exitForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const response = await fetch("YOUR_LAMBDA_URL", {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          formType: document.getElementById('formType').value,
-          company: document.getElementById('company').value,
-          name: document.getElementById('name').value,
-          email: document.getElementById('email').value,
-          exitDate: document.getElementById('exitDate').value,
-          description: document.getElementById('description').value
-        })
-      });
-      const result = await response.json();
-      if (result.ticket) {
-        window.location.href = `/src/thank-you.html?ticket=${result.ticket}`;
+      const data = {
+        formType: "employee-exit",
+        company: document.getElementById('company').value,
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        exitDate: document.getElementById('exitDate').value,
+        description: document.getElementById('description').value
+      };
+
+      try {
+        const res = await fetch("https://phtaak5cbzmgvssvli6sxirwpm0xbwcm.lambda-url.us-east-1.on.aws/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+
+        if(result.ticket) {
+          window.location.href = `/forms/thank-you.html?ticket=${result.ticket}`;
+        } else {
+          alert("Form submitted, but no ticket URL returned.\n\n" + JSON.stringify(result));
+        }
+      } catch (err) {
+        alert("Error submitting form:\n\n" + err.message);
       }
     });
   </script>
