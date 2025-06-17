@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>New Functionality Build</title>
-  <link rel="stylesheet" href="../style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-   <style>
+  <style>
     body {
       font-family: "Segoe UI", sans-serif;
       background: linear-gradient(135deg, #56ccf2, #2f80ed);
@@ -32,7 +31,7 @@
       margin-bottom: 8px;
       color: #5E6C84;
     }
-    input, select, textarea {
+    input, textarea {
       width: 100%;
       padding: 10px;
       font-size: 16px;
@@ -60,34 +59,51 @@
   </style>
 </head>
 <body>
-  <header><div class="logo">SmartBrands Help Center</div></header>
-  <main>
-    <h2>Build / Setup Something New</h2>
+  <div class="form-wrapper">
+    <img src="https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png" width="32" style="margin-bottom: 10px;" />
+    <h1>Build / Setup Something New</h1>
+
     <form id="buildForm">
-      <label>Feature or Tool Name
-        <input type="text" name="feature" required />
-      </label>
-      <label>Description
-        <textarea name="description" rows="4" required></textarea>
-      </label>
-      <label>Who is it for?
-        <input type="text" name="audience" />
-      </label>
+      <label for="feature">Feature or Tool Name *</label>
+      <input type="text" id="feature" name="feature" required />
+
+      <label for="description">Description *</label>
+      <textarea id="description" name="description" required></textarea>
+
+      <label for="audience">Who is it for?</label>
+      <input type="text" id="audience" name="audience" />
+
       <button type="submit">Submit</button>
     </form>
-  </main>
+  </div>
+
   <script>
     document.getElementById('buildForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const data = { formType: "build-setup-something-new-functionality" };
-      for (const el of e.target.elements) if (el.name) data[el.name] = el.value;
-      const res = await fetch("https://phtaak5cbzmgvssvli6sxirwpm0xbwcm.lambda-url.us-east-1.on.aws/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
-      if (res.redirected) window.location.href = res.url;
-      else alert("Request submitted.");
+      const data = {
+        formType: "build-setup-something-new-functionality",
+        feature: document.getElementById('feature').value,
+        description: document.getElementById('description').value,
+        audience: document.getElementById('audience').value
+      };
+
+      try {
+        const res = await fetch("https://phtaak5cbzmgvssvli6sxirwpm0xbwcm.lambda-url.us-east-1.on.aws/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+
+        if (result && result.ticket) {
+          window.location.href = `/forms/thank-you.html?ticket=${result.ticket}`;
+        } else {
+          alert("Form submitted, but no ticket URL returned.\n\n" + JSON.stringify(result));
+        }
+      } catch (err) {
+        alert("Error submitting form:\n\n" + err.message);
+      }
     });
   </script>
 </body>
