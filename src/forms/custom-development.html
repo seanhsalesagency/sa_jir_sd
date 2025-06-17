@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Custom Development Request</title>
-  <link rel="stylesheet" href="../style.css">
-   <style>
+  <style>
     body {
       font-family: "Segoe UI", sans-serif;
       background: linear-gradient(135deg, #56ccf2, #2f80ed);
@@ -58,39 +57,63 @@
       background-color: #0065FF;
     }
   </style>
-  <style> /* exactly as new-employee-setup.html style provided by you */ </style>
 </head>
 <body>
   <div class="form-wrapper">
-    <img src="https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png" width="32"/>
+    <img src="https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png" width="32" style="margin-bottom:10px;"/>
     <h1>Custom Development Request</h1>
     <form id="customForm">
-      <label>Company *</label>
+      <label for="company">Company *</label>
       <select id="company" required>
-        <option disabled selected>Select a company</option>
+        <option value="" disabled selected>Select a company</option>
         <option>Sales Agency</option>
         <option>Traders Agency</option>
+        <option>LeadMark</option>
+        <option>Brainy Concepts</option>
+        <option>TrafficGrid</option>
+        <option>Inbox Mailers</option>
+        <option>Smart Recognition</option>
       </select>
 
-      <label>Project Name *</label>
+      <label for="projectName">Project Name *</label>
       <input id="projectName" required/>
 
-      <label>Description *</label>
+      <label for="description">Description *</label>
       <textarea id="description" required></textarea>
 
       <button type="submit">Submit</button>
     </form>
   </div>
-<script>
-document.getElementById('customForm').onsubmit=async e=>{
-  e.preventDefault();
-  const res=await fetch("YOUR_LAMBDA_URL",{
-    method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({formType:"custom-development",company:company.value,projectName:projectName.value,description:description.value})
-  });
-  const json=await res.json();
-  if(json.ticket){location=`thank-you.html?ticket=${json.ticket}`;}
-};
-</script>
-</body>
-</html>
+
+  <script>
+    document.getElementById('customForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const data = {
+        formType: "custom-development",
+        company: document.getElementById('company').value,
+        projectName: document.getElementById('projectName').value,
+        description: document.getElementById('description').value,
+      };
+
+      try {
+        const res = await fetch("https://phtaak5cbzmgvssvli6sxirwpm0xbwcm.lambda-url.us-east-1.on.aws/", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+
+        if(result.ticket) {
+          window.location.href = `/forms/thank-you.html?ticket=${result.ticket}`;
+        } else {
+          alert("Form submitted, but no ticket URL returned.\n\n" + JSON.stringify(result));
+        }
+      } catch (err) {
+        alert("Error submitting form:\n\n" + err.message);
+      }
+    });
+  </script>
+</
+
