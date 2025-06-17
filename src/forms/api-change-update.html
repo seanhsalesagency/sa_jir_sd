@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>API Change/Update</title>
- <link rel="stylesheet" href="../style.css">
   <style>
     body {
       font-family: "Segoe UI", sans-serif;
@@ -60,37 +59,55 @@
   </style>
 </head>
 <body>
-  <header><div class="logo">SmartBrands Help Center</div></header>
-  <main>
-    <h2>API Change/Update</h2>
+  <div class="form-wrapper">
+    <img src="https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png" width="32" style="margin-bottom: 10px;" />
+    <h1>API Change/Update</h1>
+
     <form id="apiForm">
-      <label>Requester Name
-        <input type="text" name="requester" required />
-      </label>
-      <label>API Affected
-        <input type="text" name="apiName" required />
-      </label>
-      <label>Change Summary
-        <textarea name="changeDesc" rows="4" required></textarea>
-      </label>
-      <label>Environment (Dev/Test/Prod)
-        <input type="text" name="environment" />
-      </label>
+      <label for="requester">Requester Name *</label>
+      <input type="text" id="requester" name="requester" required />
+
+      <label for="apiName">API Affected *</label>
+      <input type="text" id="apiName" name="apiName" required />
+
+      <label for="changeDesc">Change Summary *</label>
+      <textarea id="changeDesc" name="changeDesc" required></textarea>
+
+      <label for="environment">Environment (Dev/Test/Prod)</label>
+      <input type="text" id="environment" name="environment" />
+
       <button type="submit">Submit</button>
     </form>
-  </main>
+  </div>
+
   <script>
     document.getElementById('apiForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const data = { formType: "api-change-update" };
-      for (const el of e.target.elements) if (el.name) data[el.name] = el.value;
-      const res = await fetch("https://phtaak5cbzmgvssvli6sxirwpm0xbwcm.lambda-url.us-east-1.on.aws/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
-      if (res.redirected) window.location.href = res.url;
-      else alert("Request submitted.");
+      const data = {
+        formType: "api-change-update",
+        requester: document.getElementById('requester').value,
+        apiName: document.getElementById('apiName').value,
+        changeDesc: document.getElementById('changeDesc').value,
+        environment: document.getElementById('environment').value
+      };
+
+      try {
+        const res = await fetch("https://phtaak5cbzmgvssvli6sxirwpm0xbwcm.lambda-url.us-east-1.on.aws/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+
+        if (result && result.ticket) {
+          window.location.href = `/forms/thank-you.html?ticket=${result.ticket}`;
+        } else {
+          alert("Form submitted, but no ticket URL returned.\n\n" + JSON.stringify(result));
+        }
+      } catch (err) {
+        alert("Error submitting form:\n\n" + err.message);
+      }
     });
   </script>
 </body>
