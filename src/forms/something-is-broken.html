@@ -1,16 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Report Something Broken</title>
-  <link rel="stylesheet" href="../style.css">
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #56ccf2, #2f80ed);
+      margin: 0; padding: 0;
+    }
+    .form-wrapper {
+      background: #fff; max-width: 600px;
+      margin: 40px auto; padding: 40px; border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    }
+    h1 {
+      font-size: 24px; margin-bottom: 16px; color: #172B4D;
+    }
+    label {
+      font-weight: 600; display: block;
+      margin-top: 20px; margin-bottom: 8px; color: #5E6C84;
+    }
+    select, textarea {
+      width: 100%; padding: 10px; font-size: 16px;
+      border: 1px solid #DFE1E6; border-radius: 4px; box-sizing: border-box;
+    }
+    textarea { height: 120px; resize: vertical; }
+    button {
+      margin-top: 24px; background-color: #0052CC;
+      color: #fff; padding: 10px 16px; font-size: 16px;
+      border: none; border-radius: 4px; cursor: pointer;
+    }
+    button:hover { background-color: #0065FF; }
+  </style>
 </head>
 <body>
-  <div class="form-container">
-    <h2>Report Something Broken</h2>
-    <form id="form">
-      <input type="hidden" id="formType" value="something-is-broken">
-      <label>Company:</label>
-      <select id="company">
+  <div class="form-wrapper">
+    <img src="https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png" width="32" style="margin-bottom:10px;"/>
+    <h1>Report Something Broken</h1>
+
+    <form id="brokenForm">
+      <label for="company">Company *</label>
+      <select id="company" required>
+        <option disabled selected>Select a company</option>
         <option>Sales Agency</option>
         <option>Traders Agency</option>
         <option>LeadMark</option>
@@ -19,29 +52,42 @@
         <option>Inbox Mailers</option>
         <option>Smart Recognition</option>
       </select>
-      <label>Issue Description:</label>
+
+      <label for="description">Issue Description *</label>
       <textarea id="description" required></textarea>
+
       <button type="submit">Submit</button>
     </form>
   </div>
+
   <script>
-    const form = document.getElementById('form');
-    form.addEventListener('submit', async (e) => {
+    document.getElementById('brokenForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const response = await fetch("YOUR_LAMBDA_URL", {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          formType: document.getElementById('formType').value,
-          company: document.getElementById('company').value,
-          description: document.getElementById('description').value
-        })
-      });
-      const result = await response.json();
-      if (result.ticket) {
-        window.location.href = `/src/thank-you.html?ticket=${result.ticket}`;
+      const data = {
+        formType: "something-is-broken",
+        company: document.getElementById('company').value,
+        description: document.getElementById('description').value
+      };
+
+      try {
+        const res = await fetch("https://phtaak5cbzmgvssvli6sxirwpm0xbwcm.lambda-url.us-east-1.on.aws/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+
+        if(result.ticket) {
+          window.location.href = `/forms/thank-you.html?ticket=${result.ticket}`;
+        } else {
+          alert("Form submitted, but no ticket URL returned.\n\n" + JSON.stringify(result));
+        }
+      } catch (err) {
+        alert("Error submitting form:\n\n" + err.message);
       }
     });
   </script>
 </body>
 </html>
+
