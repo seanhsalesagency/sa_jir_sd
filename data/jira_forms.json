@@ -1,0 +1,105 @@
+{
+  "new-employee-setup": {
+    "fields": [
+      {"label": "Company", "type": "select", "name": "company", "options": ["Sales Agency", "Traders Agency", "LeadMark", "Brainy Concepts", "TrafficGrid", "Inbox Mailers", "Smart Recognition"]},
+      {"label": "Employee Name and Position", "type": "text", "name": "name"},
+      {"label": "Employee Email", "type": "email", "name": "email"},
+      {"label": "Description", "type": "textarea", "name": "description"},
+      {"label": "Start Date", "type": "date", "name": "startDate"}
+    ]
+  },
+  "employee-exit": {
+    "fields": [
+      {"label": "Company", "type": "select", "name": "company", "options": ["Sales Agency", "Traders Agency", "LeadMark", "Brainy Concepts", "TrafficGrid", "Inbox Mailers", "Smart Recognition"]},
+      {"label": "Employee Name and Position", "type": "text", "name": "name"},
+      {"label": "Employee Email", "type": "email", "name": "email"},
+      {"label": "Exit Date", "type": "date", "name": "exitDate"},
+      {"label": "Description", "type": "textarea", "name": "description"}
+    ]
+  },
+  "custom-development": {
+    "fields": [
+      {"label": "Company", "type": "select", "name": "company", "options": ["Sales Agency", "Traders Agency"]},
+      {"label": "Project Name", "type": "text", "name": "projectName"},
+      {"label": "Description", "type": "textarea", "name": "description"}
+    ]
+  },
+  "api-change-update": {
+    "fields": [
+      {"label": "Requester Name", "type": "text", "name": "requester"},
+      {"label": "API Affected", "type": "text", "name": "apiName"},
+      {"label": "Change Summary", "type": "textarea", "name": "changeDesc"},
+      {"label": "Environment (Dev/Test/Prod)", "type": "text", "name": "environment"}
+    ]
+  },
+  "purchase-request": {
+    "fields": [
+      {"label": "Item Description", "type": "text", "name": "item"},
+      {"label": "Quantity", "type": "number", "name": "quantity"},
+      {"label": "Estimated Cost", "type": "text", "name": "cost"},
+      {"label": "Business Justification", "type": "textarea", "name": "justification"}
+    ]
+  },
+  "website-change-update": {
+    "fields": [
+      {"label": "Page or Feature", "type": "text", "name": "page"},
+      {"label": "Requested Update", "type": "textarea", "name": "updateDesc"},
+      {"label": "Requester", "type": "text", "name": "requester"}
+    ]
+  },
+  "domain-dns-setup": {
+    "fields": [
+      {"label": "Domain Name", "type": "text", "name": "domain"},
+      {"label": "DNS Change Needed", "type": "textarea", "name": "change"},
+      {"label": "Urgency", "type": "text", "name": "urgency"}
+    ]
+  },
+  "data-import-export": {
+    "fields": [
+      {"label": "Request Type (Import/Export/Upload/Host)", "type": "text", "name": "requestType"},
+      {"label": "Data Format/File Type", "type": "text", "name": "fileType"},
+      {"label": "Description", "type": "textarea", "name": "description"}
+    ]
+  },
+  "visualization-request": {
+    "fields": [
+      {"label": "Visualization Type", "type": "text", "name": "visualizationType"},
+      {"label": "Data Source", "type": "text", "name": "dataSource"},
+      {"label": "Purpose", "type": "textarea", "name": "purpose"}
+    ]
+  },
+  "funnel-landing-page-setup": {
+    "fields": [
+      {"label": "Campaign Name", "type": "text", "name": "campaign"},
+      {"label": "Requested Assets", "type": "textarea", "name": "assets"},
+      {"label": "Deadline", "type": "text", "name": "deadline"}
+    ]
+  },
+  "other-change-update": {
+    "fields": [
+      {"label": "Change/Update Needed", "type": "textarea", "name": "changeNeeded"},
+      {"label": "Justification", "type": "textarea", "name": "justification"}
+    ]
+  },
+  "credential-access": {
+    "fields": [
+      {"label": "Requester Name", "type": "text", "name": "requester"},
+      {"label": "Access Needed For", "type": "text", "name": "targetUser"},
+      {"label": "Systems or Services", "type": "textarea", "name": "systems"},
+      {"label": "Justification", "type": "textarea", "name": "justification"}
+    ]
+  },
+  "report-change-update": {
+    "fields": [
+      {"label": "Report Name", "type": "text", "name": "reportName"},
+      {"label": "Requested Change", "type": "textarea", "name": "reportChange"},
+      {"label": "Priority (Low/Med/High)", "type": "text", "name": "priority"}
+    ]
+  },
+  "something-is-broken": {
+    "fields": [
+      {"label": "Company", "type": "select", "name": "company", "options": ["Sales Agency", "Traders Agency", "LeadMark", "Brainy Concepts", "TrafficGrid", "Inbox Mailers", "Smart Recognition"]},
+      {"label": "Issue Description", "type": "textarea", "name": "description"}
+    ]
+  }
+}
