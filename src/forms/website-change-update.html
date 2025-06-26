@@ -1,93 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Website Change/Update</title>
-  <link rel="stylesheet" href="../style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-   <style>
+  <style>
     body {
       font-family: "Segoe UI", sans-serif;
       background: linear-gradient(135deg, #56ccf2, #2f80ed);
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
     }
     .form-wrapper {
-      background: #fff;
-      max-width: 600px;
-      margin: 40px auto;
-      padding: 40px;
-      border-radius: 10px;
+      background: #fff; max-width: 600px;
+      margin: 40px auto; padding: 40px; border-radius: 10px;
       box-shadow: 0 6px 20px rgba(0,0,0,0.1);
     }
     h1 {
-      font-size: 24px;
-      margin-bottom: 16px;
-      color: #172B4D;
+      font-size: 24px; margin-bottom: 16px; color: #172B4D;
     }
     label {
-      font-weight: 600;
-      display: block;
-      margin-top: 20px;
-      margin-bottom: 8px;
-      color: #5E6C84;
+      font-weight: 600; display: block;
+      margin-top: 20px; margin-bottom: 8px; color: #5E6C84;
     }
-    input, select, textarea {
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      border: 1px solid #DFE1E6;
-      border-radius: 4px;
-      box-sizing: border-box;
+    input, textarea {
+      width: 100%; padding: 10px; font-size: 16px;
+      border: 1px solid #DFE1E6; border-radius: 4px; box-sizing: border-box;
     }
-    textarea {
-      height: 120px;
-      resize: vertical;
-    }
+    textarea { height: 120px; resize: vertical; }
     button {
-      margin-top: 24px;
-      background-color: #0052CC;
-      color: #fff;
-      padding: 10px 16px;
-      font-size: 16px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
+      margin-top: 24px; background-color: #0052CC;
+      color: #fff; padding: 10px 16px; font-size: 16px;
+      border: none; border-radius: 4px; cursor: pointer;
     }
-    button:hover {
-      background-color: #0065FF;
-    }
+    button:hover { background-color: #0065FF; }
   </style>
 </head>
 <body>
-  <header><div class="logo">SmartBrands Help Center</div></header>
-  <main>
-    <h2>Website Change/Update</h2>
+  <div class="form-wrapper">
+    <img src="https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png" width="32" style="margin-bottom:10px;"/>
+    <h1>Website Change/Update</h1>
+
     <form id="webForm">
-      <label>Page or Feature
-        <input type="text" name="page" required />
-      </label>
-      <label>Requested Update
-        <textarea name="updateDesc" rows="4" required></textarea>
-      </label>
-      <label>Requester
-        <input type="text" name="requester" />
-      </label>
+      <label for="page">Page or Feature *</label>
+      <input type="text" id="page" name="page" required/>
+
+      <label for="updateDesc">Requested Update *</label>
+      <textarea id="updateDesc" name="updateDesc" required></textarea>
+
+      <label for="requester">Requester</label>
+      <input type="text" id="requester" name="requester"/>
+
       <button type="submit">Submit</button>
     </form>
-  </main>
+  </div>
+
   <script>
     document.getElementById('webForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const data = { formType: "website-change-update" };
-      for (const el of e.target.elements) if (el.name) data[el.name] = el.value;
-      const res = await fetch("https://phtaak5cbzmgvssvli6sxirwpm0xbwcm.lambda-url.us-east-1.on.aws/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
-      if (res.redirected) window.location.href = res.url;
-      else alert("Request submitted.");
+      const data = {
+        formType: "website-change-update",
+        page: document.getElementById('page').value,
+        updateDesc: document.getElementById('updateDesc').value,
+        requester: document.getElementById('requester').value
+      };
+
+      try {
+        const res = await fetch("https://phtaak5cbzmgvssvli6sxirwpm0xbwcm.lambda-url.us-east-1.on.aws/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+
+        if(result.ticket) {
+          window.location.href = `/forms/thank-you.html?ticket=${result.ticket}`;
+        } else {
+          alert("Form submitted, but no ticket URL returned.\n\n" + JSON.stringify(result));
+        }
+      } catch (err) {
+        alert("Error submitting form:\n\n" + err.message);
+      }
     });
   </script>
 </body>
