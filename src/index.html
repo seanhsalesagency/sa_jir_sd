@@ -11,23 +11,66 @@
 <main class="container">
   <h1>Technical Services Group</h1>
   <p>Select a form to submit your request.</p>
-  <div id="forms-list" class="link-section"></div>
+  <div id="forms-list" class="link-section">
+    <div id="loading">Loading available forms...</div>
+  </div>
 </main>
-
 <script>
-  fetch('/data/jira_forms.json')
-    .then(res => res.json())
-    .then(forms => {
+  // Replace this URL with your actual Lambda URL
+  const LAMBDA_URL = 'https://s4imtdlzhdq7cnnmor7bx4vcmm0banfo.lambda-url.us-east-1.on.aws/';
+  
+  // Fetch forms from Lambda instead of static JSON
+  fetch(`${LAMBDA_URL}?action=getForms`)
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then(data => {
       const formsList = document.getElementById('forms-list');
-      forms.forEach(form => {
+      const loading = document.getElementById('loading');
+      
+      // Remove loading message
+      if (loading) loading.remove();
+      
+      // Check if we got forms
+      if (!data.success || !data.forms || data.forms.length === 0) {
+        formsList.innerHTML = '<p>No forms available at this time.</p>';
+        return;
+      }
+      
+      // Create links for each form
+      data.forms.forEach(form => {
         const link = document.createElement('a');
-        link.href = `/src/forms/dynamic_form.html?form=${form.id}`;
+        link.href = `/src/forms/dynamic_form.html?form=${form.id}&issueTypeId=${form.issueTypeId}`;
         link.className = 'link-card';
         link.innerHTML = `
-          <div class="link-text"><h3>${form.title}</h3><p>${form.description}</p></div>
-          <span class="arrow">&#x276F;</span>`;
+          <div class="link-text">
+            <h3>${form.title}</h3>
+            <p>${form.description}</p>
+          </div>
+          <span class="arrow">&#x276F;</span>
+        `;
         formsList.appendChild(link);
       });
+      
+      console.log(`Loaded ${data.forms.length} forms from Lambda`);
+    })
+    .catch(error => {
+      console.error('Error loading forms:', error);
+      const formsList = document.getElementById('forms-list');
+      const loading = document.getElementById('loading');
+      
+      if (loading) loading.remove();
+      
+      formsList.innerHTML = `
+        <div style="color: red; padding: 20px; border: 1px solid red; border-radius: 5px;">
+          <h3>Error Loading Forms</h3>
+          <p>Unable to load forms from server. Please try again later.</p>
+          <p><small>Error: ${error.message}</small></p>
+        </div>
+      `;
     });
 </script>
 </body>
