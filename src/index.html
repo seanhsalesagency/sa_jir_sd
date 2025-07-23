@@ -1,67 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Technical Services Group – Forms</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="header"></header>
+<main class="container">
+  <h1>Technical Services Group</h1>
+  <p>Select a form to submit your request.</p>
+  <div id="forms-list" class="link-section"></div>
+</main>
+
 <script>
-async function loadForms() {
-  const res = await fetch('/data/jira_forms.json');
-  const forms = await res.json();
-  const formSelector = document.getElementById('form-selector');
-
-  forms.forEach(form => {
-    const option = document.createElement('option');
-    option.value = form.issueType;
-    option.textContent = form.issueType;
-    formSelector.appendChild(option);
-  });
-
-  formSelector.addEventListener('change', () => renderForm(forms));
-}
-
-function renderForm(forms) {
-  const selected = document.getElementById('form-selector').value;
-  const formFields = forms.find(f => f.issueType === selected).fields;
-  
-  const formDiv = document.getElementById('form-container');
-  formDiv.innerHTML = '';
-
-  formFields.forEach(field => {
-    const label = document.createElement('label');
-    label.textContent = field.name + (field.required ? '*' : '');
-    formDiv.appendChild(label);
-
-    const input = field.schema.type === 'string' ? 
-      document.createElement('input') : document.createElement('textarea');
-    input.id = field.id;
-    input.required = field.required;
-    formDiv.appendChild(input);
-  });
-
-  const submitBtn = document.createElement('button');
-  submitBtn.textContent = 'Submit';
-  formDiv.appendChild(submitBtn);
-
-  submitBtn.onclick = submitForm;
-}
-
-async function submitForm() {
-  const formType = document.getElementById('form-selector').value;
-  const inputs = document.querySelectorAll('#form-container input, #form-container textarea');
-  const fields = {};
-
-  inputs.forEach(input => fields[input.id] = input.value);
-
-  const res = await fetch('YOUR_LAMBDA_URL', {
-    method: 'POST',
-    body: JSON.stringify({formType, ...fields})
-  });
-  
-  const json = await res.json();
-  if (json.ticket) {
-    location.href = `/src/forms/thank-you.html?ticket=${json.ticket}`;
-  }
-}
-
-document.addEventListener('DOMContentLoaded', loadForms);
+  fetch('/data/jira_forms.json')
+    .then(res => res.json())
+    .then(forms => {
+      const formsList = document.getElementById('forms-list');
+      forms.forEach(form => {
+        const link = document.createElement('a');
+        link.href = `/src/forms/dynamic_form.html?form=${form.id}`;
+        link.className = 'link-card';
+        link.innerHTML = `
+          <div class="link-text"><h3>${form.title}</h3><p>${form.description}</p></div>
+          <span class="arrow">&#x276F;</span>`;
+        formsList.appendChild(link);
+      });
+    });
 </script>
-
-<select id="form-selector"><option>Select Form</option></select>
-<div id="form-container"></div>
-
-
+</body>
+</html>
