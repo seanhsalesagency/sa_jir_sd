@@ -2,62 +2,319 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dynamic Form</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Technical Services Group – Form</title>
   <link rel="stylesheet" href="../style.css">
+  <style>
+    .form-container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .required {
+      color: red;
+    }
+    
+    .submit-btn {
+      background-color: #007cba;
+      color: white;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+    }
+    
+    .submit-btn:hover {
+      background-color: #005a87;
+    }
+    
+    .submit-btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .message {
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    
+    .message.success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .message.error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+    }
+    
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: #007cba;
+      text-decoration: none;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-  <div class="form-wrapper">
-    <img src="https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png" width="32"/>
-    <h1 id="form-title"></h1>
-    <form id="dynamicForm"></form>
-  </div>
-
-  <script>
-    const params = new URLSearchParams(location.search);
-    const formId = params.get('form');
+<header class="header"></header>
+<main class="container">
+  <div class="form-container">
+    <a href="../index.html" class="back-link">← Back to Forms</a>
     
-    fetch('/data/jira_forms.json')
-      .then(res => res.json())
-      .then(forms => {
-        const formConfig = forms.find(f => f.id === formId);
-        if (!formConfig) {
-          alert('Form not found');
-          return;
-        }
-        document.getElementById('form-title').textContent = formConfig.title;
-        const form = document.getElementById('dynamicForm');
-        formConfig.fields.forEach(field => {
-          const label = document.createElement('label');
-          label.textContent = field.label;
-          const input = document.createElement(field.type === 'textarea' ? 'textarea' : 'input');
-          if (field.type !== 'textarea') input.type = field.type;
-          input.name = field.name;
-          input.required = field.required;
-          form.append(label, input);
-        });
-        const button = document.createElement('button');
-        button.type = 'submit';
-        button.textContent = 'Submit';
-        form.appendChild(button);
+    <div id="loading" class="loading">
+      <p>Loading form...</p>
+    </div>
+    
+    <div id="form-content" style="display: none;">
+      <h1 id="form-title">Form</h1>
+      <p id="form-description">Please fill out the form below.</p>
+      
+      <form id="jira-form">
+        <div id="form-fields"></div>
+        
+        <button type="submit" class="submit-btn" id="submit-btn">
+          Submit Request
+        </button>
+      </form>
+      
+      <div id="message"></div>
+    </div>
+  </div>
+</main>
 
-        form.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const formData = { formType: formId };
-          new FormData(form).forEach((val, key) => formData[key] = val);
-          const response = await fetch("YOUR_LAMBDA_URL", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData),
-          });
-          const result = await response.json();
-          if (result.ticket) {
-            window.location.href = `thank-you.html?ticket=${result.ticket}`;
-          } else {
-            alert("Submission failed.");
+<script>
+  // Replace this URL with your actual Lambda URL
+  const LAMBDA_URL = 'https://your-lambda-url-here.amazonaws.com/default/sync_jira_forms';
+  
+  // Get URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const formId = urlParams.get('form');
+  const issueTypeId = urlParams.get('issueTypeId');
+  
+  // Elements
+  const loading = document.getElementById('loading');
+  const formContent = document.getElementById('form-content');
+  const formTitle = document.getElementById('form-title');
+  const formDescription = document.getElementById('form-description');
+  const formFields = document.getElementById('form-fields');
+  const jiraForm = document.getElementById('jira-form');
+  const submitBtn = document.getElementById('submit-btn');
+  const messageDiv = document.getElementById('message');
+  
+  // Load form configuration
+  async function loadForm() {
+    try {
+      if (!formId) {
+        throw new Error('No form ID specified');
+      }
+      
+      // Get all forms from Lambda
+      const response = await fetch(`${LAMBDA_URL}?action=getForms`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      if (!data.success || !data.forms) {
+        throw new Error('Failed to load forms from server');
+      }
+      
+      // Find the specific form
+      const form = data.forms.find(f => f.id === formId);
+      if (!form) {
+        throw new Error(`Form "${formId}" not found`);
+      }
+      
+      // Update page content
+      formTitle.textContent = form.title;
+      formDescription.textContent = form.description;
+      
+      // Create form fields
+      createFormFields(form.fields, form.issueTypeId);
+      
+      // Show form, hide loading
+      loading.style.display = 'none';
+      formContent.style.display = 'block';
+      
+    } catch (error) {
+      console.error('Error loading form:', error);
+      loading.innerHTML = `
+        <div class="message error">
+          <h3>Error Loading Form</h3>
+          <p>Unable to load the requested form.</p>
+          <p><small>Error: ${error.message}</small></p>
+          <a href="../index.html">← Back to Forms</a>
+        </div>
+      `;
+    }
+  }
+  
+  // Create form fields dynamically
+  function createFormFields(fields, issueTypeId) {
+    // Store issue type ID in a hidden field
+    const hiddenField = document.createElement('input');
+    hiddenField.type = 'hidden';
+    hiddenField.name = 'issueTypeId';
+    hiddenField.value = issueTypeId;
+    formFields.appendChild(hiddenField);
+    
+    // Create visible fields
+    fields.forEach(field => {
+      const formGroup = document.createElement('div');
+      formGroup.className = 'form-group';
+      
+      const label = document.createElement('label');
+      label.textContent = field.label;
+      if (field.required) {
+        label.innerHTML += ' <span class="required">*</span>';
+      }
+      
+      let input;
+      switch (field.type) {
+        case 'textarea':
+          input = document.createElement('textarea');
+          break;
+        case 'select':
+          input = document.createElement('select');
+          if (field.allowedValues) {
+            field.allowedValues.forEach(option => {
+              const optionElement = document.createElement('option');
+              optionElement.value = option.id || option.value || option;
+              optionElement.textContent = option.name || option.text || option;
+              input.appendChild(optionElement);
+            });
           }
-        });
+          break;
+        default:
+          input = document.createElement('input');
+          input.type = field.type || 'text';
+      }
+      
+      input.name = field.name;
+      input.required = field.required || false;
+      
+      if (field.name === 'summary') {
+        input.placeholder = 'Brief description of your request';
+      } else if (field.name === 'description') {
+        input.placeholder = 'Please provide detailed information about your request';
+      }
+      
+      formGroup.appendChild(label);
+      formGroup.appendChild(input);
+      formFields.appendChild(formGroup);
+    });
+  }
+  
+  // Handle form submission
+  jiraForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    // Disable submit button
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+    
+    try {
+      // Collect form data
+      const formData = new FormData(jiraForm);
+      const data = Object.fromEntries(formData.entries());
+      
+      // Validate required fields
+      const requiredFields = Array.from(jiraForm.querySelectorAll('[required]'));
+      for (const field of requiredFields) {
+        if (!field.value.trim()) {
+          throw new Error(`Please fill in the required field: ${field.name}`);
+        }
+      }
+      
+      // Submit to Lambda
+      const response = await fetch(`${LAMBDA_URL}?action=createIssue`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
       });
-  </script>
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        // Success message
+        messageDiv.innerHTML = `
+          <div class="message success">
+            <h3>Request Submitted Successfully!</h3>
+            <p>Your request has been created with ID: <strong>${result.result.key}</strong></p>
+            <p>You can track your request at: <a href="${result.issueUrl}" target="_blank">${result.issueUrl}</a></p>
+            <p><a href="../index.html">Submit Another Request</a></p>
+          </div>
+        `;
+        
+        // Hide form
+        jiraForm.style.display = 'none';
+        
+      } else {
+        throw new Error(result.message || 'Failed to submit request');
+      }
+      
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      messageDiv.innerHTML = `
+        <div class="message error">
+          <h3>Submission Failed</h3>
+          <p>There was an error submitting your request.</p>
+          <p><small>Error: ${error.message}</small></p>
+        </div>
+      `;
+    } finally {
+      // Re-enable submit button
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Request';
+    }
+  });
+  
+  // Load form when page loads
+  loadForm();
+</script>
 </body>
+</html>
 </html>
