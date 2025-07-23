@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dynamic Form</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <div class="form-wrapper">
+    <img src="https://wac-cdn.atlassian.com/assets/img/favicons/atlassian/favicon.png" width="32"/>
+    <h1 id="form-title"></h1>
+    <form id="dynamicForm"></form>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const formId = params.get('form');
+    
+    fetch('/data/jira_forms.json')
+      .then(res => res.json())
+      .then(forms => {
+        const formConfig = forms.find(f => f.id === formId);
+        if (!formConfig) {
+          alert('Form not found');
+          return;
+        }
+        document.getElementById('form-title').textContent = formConfig.title;
+        const form = document.getElementById('dynamicForm');
+        formConfig.fields.forEach(field => {
+          const label = document.createElement('label');
+          label.textContent = field.label;
+          const input = document.createElement(field.type === 'textarea' ? 'textarea' : 'input');
+          if (field.type !== 'textarea') input.type = field.type;
+          input.name = field.name;
+          input.required = field.required;
+          form.append(label, input);
+        });
+        const button = document.createElement('button');
+        button.type = 'submit';
+        button.textContent = 'Submit';
+        form.appendChild(button);
+
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const formData = { formType: formId };
+          new FormData(form).forEach((val, key) => formData[key] = val);
+          const response = await fetch("YOUR_LAMBDA_URL", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData),
+          });
+          const result = await response.json();
+          if (result.ticket) {
+            window.location.href = `thank-you.html?ticket=${result.ticket}`;
+          } else {
+            alert("Submission failed.");
+          }
+        });
+      });
+  </script>
+</body>
+</html>
