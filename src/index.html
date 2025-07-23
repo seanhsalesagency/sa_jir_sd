@@ -19,6 +19,9 @@
   // Replace this URL with your actual Lambda URL
   const LAMBDA_URL = 'https://s4imtdlzhdq7cnnmor7bx4vcmm0banfo.lambda-url.us-east-1.on.aws/';
   
+  // Use GitHub Pages URL for forms since custom domain doesn't serve subdirectories
+  const GITHUB_PAGES_BASE = 'https://seanhsalesagency.github.io/sa_jir_sd';
+  
   // Fetch forms from Lambda instead of static JSON
   fetch(`${LAMBDA_URL}?action=getForms`)
     .then(res => {
@@ -40,10 +43,11 @@
         return;
       }
       
-      // Create links for each form
+      // Create links for each form using GitHub Pages URL
       data.forms.forEach(form => {
         const link = document.createElement('a');
-        link.href = `/src/forms/dynamic_form.html?form=${form.id}&issueTypeId=${form.issueTypeId}`;
+        // Use GitHub Pages URL for the form pages
+        link.href = `${GITHUB_PAGES_BASE}/src/forms/dynamic_form.html?form=${form.id}&issueTypeId=${form.issueTypeId}`;
         link.className = 'link-card';
         link.innerHTML = `
           <div class="link-text">
