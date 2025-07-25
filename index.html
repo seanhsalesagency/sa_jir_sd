@@ -195,7 +195,18 @@
             color: #de350b;
         }
         
-        .retry-button {
+        .error-details {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: left;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+        
+        .retry-button, .debug-button {
             background: #0052cc;
             color: white;
             border: none;
@@ -207,8 +218,16 @@
             transition: background-color 0.15s;
         }
         
-        .retry-button:hover {
+        .retry-button:hover, .debug-button:hover {
             background: #0747a6;
+        }
+        
+        .debug-button {
+            background: #6c757d;
+        }
+        
+        .debug-button:hover {
+            background: #5a6268;
         }
         
         .stats-container {
@@ -270,6 +289,15 @@
             color: white;
             border-color: #0052cc;
         }
+        
+        .project-info {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 4px;
+            padding: 10px 15px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -299,14 +327,15 @@
             </div>
         </div>
 
+        <div id="projectInfo" class="project-info" style="display: none;">
+            <strong>Project:</strong> <span id="projectName">Loading...</span> | 
+            <strong>Key:</strong> <span id="projectKey">Loading...</span> | 
+            <strong>Source:</strong> <span id="dataSource">Loading...</span>
+        </div>
+
         <div id="categoriesContainer" class="categories" style="display: none;">
-            <div class="category-tabs">
-                <button class="category-tab active" onclick="filterForms('all')">All Forms</button>
-                <button class="category-tab" onclick="filterForms('User Setup')">User Setup</button>
-                <button class="category-tab" onclick="filterForms('Purchase')">Purchases</button>
-                <button class="category-tab" onclick="filterForms('[System] Service request')">System Requests</button>
-                <button class="category-tab" onclick="filterForms('Bug')">Bug Reports</button>
-                <button class="category-tab" onclick="filterForms('Story')">Development</button>
+            <div class="category-tabs" id="categoryTabs">
+                <!-- Categories will be populated dynamically -->
             </div>
         </div>
 
@@ -325,15 +354,17 @@
         
         let allForms = [];
         let currentFilter = 'all';
+        let projectInfo = null;
         
         async function loadForms() {
             const statusIndicators = document.getElementById('statusIndicators');
             const mainContent = document.getElementById('mainContent');
             const statsContainer = document.getElementById('statsContainer');
             const categoriesContainer = document.getElementById('categoriesContainer');
+            const projectInfoDiv = document.getElementById('projectInfo');
             
             try {
-                console.log('🚀 Loading complete forms solution...');
+                console.log('🚀 Loading dynamic forms from Jira...');
                 
                 statusIndicators.innerHTML = `
                     <span class="status-indicator status-loading">
@@ -350,7 +381,8 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
                 }
                 
                 const data = await response.json();
@@ -358,6 +390,7 @@
                 
                 if (data.success && data.forms && data.forms.length > 0) {
                     allForms = data.forms;
+                    projectInfo = data.projectInfo;
                     
                     // Update status
                     statusIndicators.innerHTML = `
@@ -365,15 +398,24 @@
                             ✅ ${data.totalForms} Forms Loaded
                         </span>
                         <span class="status-indicator status-success">
-                            🔗 ${data.source}
+                            🔗 ${data.source.replace(/_/g, ' ')}
                         </span>
                     `;
+                    
+                    // Update project info
+                    document.getElementById('projectName').textContent = projectInfo.projectName || 'Unknown';
+                    document.getElementById('projectKey').textContent = projectInfo.projectKey || 'Unknown';
+                    document.getElementById('dataSource').textContent = data.source.replace(/_/g, ' ');
+                    projectInfoDiv.style.display = 'block';
                     
                     // Update stats
                     const totalFields = data.forms.reduce((sum, form) => sum + (form.fields?.length || 0), 0);
                     document.getElementById('totalForms').textContent = data.totalForms;
                     document.getElementById('totalFields').textContent = totalFields;
-                    document.getElementById('formSource').textContent = data.source.replace('_', ' ');
+                    document.getElementById('formSource').textContent = data.source.replace(/_/g, ' ');
+                    
+                    // Build dynamic categories from actual issue types
+                    buildDynamicCategories(data.forms);
                     
                     // Show stats and categories
                     statsContainer.style.display = 'flex';
@@ -383,13 +425,39 @@
                     renderForms(allForms);
                     
                 } else {
-                    throw new Error(data.message || 'No forms available');
+                    throw new Error(data.message || data.error || 'No forms available');
                 }
                 
             } catch (error) {
                 console.error('❌ Error loading forms:', error);
                 showError(error, statusIndicators, mainContent);
             }
+        }
+        
+        function buildDynamicCategories(forms) {
+            const categoryTabs = document.getElementById('categoryTabs');
+            
+            // Get unique issue types from forms
+            const issueTypes = [...new Set(forms.map(form => form.issueTypeName))].sort();
+            
+            // Build category tabs HTML
+            let tabsHtml = `
+                <button class="category-tab active" onclick="filterForms('all')">
+                    All Forms (${forms.length})
+                </button>
+            `;
+            
+            issueTypes.forEach(issueType => {
+                const count = forms.filter(form => form.issueTypeName === issueType).length;
+                tabsHtml += `
+                    <button class="category-tab" onclick="filterForms('${issueType}')">
+                        ${issueType} (${count})
+                    </button>
+                `;
+            });
+            
+            categoryTabs.innerHTML = tabsHtml;
+            console.log('📂 Built dynamic categories:', issueTypes);
         }
         
         function renderForms(forms) {
@@ -450,12 +518,18 @@
         }
         
         function openForm(formId, formTitle, formType) {
-            // For now, show details - later you can implement full form UI
             const form = allForms.find(f => f.id === formId);
             
-            alert(`Opening: ${formTitle}\n\nForm ID: ${formId}\nForm Type: ${formType}\nFields: ${form?.fields?.length || 0}\n\n🚧 Full form interface coming next!\n\nThis will integrate with your existing ticket creation system.`);
+            // Show form details
+            let fieldsInfo = '';
+            if (form.fields && form.fields.length > 0) {
+                fieldsInfo = '\n\nFields:\n' + form.fields.map(field => 
+                    `• ${field.label} (${field.type}${field.required ? ', required' : ''})`
+                ).join('\n');
+            }
             
-            // TODO: Implement full form interface that submits to CREATE_TICKET_URL
+            alert(`Opening: ${formTitle}\n\nForm ID: ${formId}\nForm Type: ${formType}\nProject: ${projectInfo?.projectKey || 'Unknown'}\nIssue Type: ${form.issueTypeName}${fieldsInfo}\n\n🚧 Full form interface coming next!\n\nThis will integrate with your existing ticket creation system.`);
+            
             console.log('Form to open:', form);
         }
         
@@ -470,17 +544,62 @@
                 <div class="error-container">
                     <div class="error-title">⚠️ Unable to Load Forms</div>
                     <p><strong>Error:</strong> ${error.message}</p>
+                    <div class="error-details">
+                        <strong>Troubleshooting:</strong><br>
+                        1. Check if your Jira project exists and is accessible<br>
+                        2. Verify API authentication and permissions<br>
+                        3. Try the debug tools below for more information
+                    </div>
                     <button class="retry-button" onclick="location.reload()">
                         🔄 Retry
+                    </button>
+                    <button class="debug-button" onclick="runDiagnostics()">
+                        🔍 Run Diagnostics
+                    </button>
+                    <button class="debug-button" onclick="discoverProjects()">
+                        📋 Discover Projects
                     </button>
                 </div>
             `;
         }
         
+        async function runDiagnostics() {
+            try {
+                const response = await fetch(`${LAMBDA_URL}?action=discoverProjects`);
+                const data = await response.json();
+                console.log('🔍 Diagnostics:', data);
+                
+                alert('Diagnostics completed! Check browser console for details.\n\n' +
+                      'Summary:\n' +
+                      `• Auth: ${data.discovery?.authTest?.success ? '✅' : '❌'}\n` +
+                      `• Projects found: ${data.discovery?.allProjects?.count || 0}\n` +
+                      `• Smart Brands projects: ${data.discovery?.smartBrandsProjects?.count || 0}`);
+            } catch (error) {
+                alert('Diagnostics failed: ' + error.message);
+            }
+        }
+        
+        async function discoverProjects() {
+            try {
+                const response = await fetch(`${LAMBDA_URL}?action=discoverProjects`);
+                const data = await response.json();
+                
+                if (data.success && data.discovery?.allProjects?.projects) {
+                    const projects = data.discovery.allProjects.projects;
+                    const projectList = projects.map(p => `${p.key}: ${p.name}`).join('\n');
+                    alert(`Available Projects (${projects.length}):\n\n${projectList}`);
+                } else {
+                    alert('Failed to discover projects: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Project discovery failed: ' + error.message);
+            }
+        }
+        
         // Load forms when page loads
         document.addEventListener('DOMContentLoaded', loadForms);
         
-        console.log('🎯 Smart Brands Service Desk Portal loaded');
+        console.log('🎯 Smart Brands Service Desk Portal loaded (Dynamic Version)');
         console.log('Forms API:', LAMBDA_URL);
         console.log('Ticket Creation API:', CREATE_TICKET_URL);
     </script>
