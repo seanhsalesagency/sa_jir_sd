@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF‑8">
-  <meta name="viewport" content="width=device‑width, initial‑scale=1.0">
-  <title>Smart Brands Company – Service Desk</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Brands Company – Service Desk</title>
+
+  <!-- link to your CSS in the same folder -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
@@ -12,7 +14,7 @@
       <h1>Smart Brands Company</h1>
       <p class="subtitle">Service Desk Portal</p>
       <div class="status-indicators" id="statusIndicators">
-        🔄 Loading…
+        <span class="status-indicator status-loading">🔄 Loading…</span>
       </div>
     </header>
 
@@ -20,11 +22,11 @@
       <div class="loading-container">
         <div class="spinner"></div>
         <h2>Loading Service Desk Forms…</h2>
-        <p>Connecting to Jira and retrieving available forms…</p>
       </div>
     </main>
   </div>
 
+  <!-- pull in your JS from the same folder -->
   <script src="app.js"></script>
 </body>
 </html>
