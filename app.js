@@ -1,24 +1,26 @@
-// point this at your new Lambda URL
-const LAMBDA_URL = "https://s4imtdlzhdq7cnnmor7bx4vcmm0banfo.lambda-url.us-east-1.on.aws/";
+const LAMBDA_URL =
+  "https://s4imtdlzhdq7cnnmor7bx4vcmm0banfo.lambda-url.us-east-1.on.aws/";
 
 async function loadForms() {
   const status = document.getElementById("statusIndicators");
   const main   = document.getElementById("mainContent");
 
   try {
-    status.innerHTML = `<span class="status-indicator status-loading">📡 Fetching forms…</span>`;
+    status.innerHTML = `<span class="status-indicator status-loading">📡 Fetching forms…</span>`;
 
-    const resp = await fetch(LAMBDA_URL, { method: "GET", headers: { Accept: "application/json" } });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const resp = await fetch(LAMBDA_URL, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 
     const forms = await resp.json();
     if (!Array.isArray(forms) || forms.length === 0) {
       throw new Error("No forms returned");
     }
 
-    status.innerHTML = `<span class="status-indicator status-success">✅ ${forms.length} Forms Loaded</span>`;
+    status.innerHTML = `<span class="status-indicator status-success">✅ ${forms.length} Forms Loaded</span>`;
 
-    // render them
     let html = '<div class="forms-container">';
     forms.forEach((f) => {
       html += `
@@ -39,7 +41,7 @@ async function loadForms() {
 
   } catch (err) {
     console.error(err);
-    status.innerHTML = `<span class="status-indicator status-error">❌ Error Loading Forms</span>`;
+    status.innerHTML = `<span class="status-indicator status-error">❌ Error Loading Forms</span>`;
     main.innerHTML = `
       <div class="error-container">
         <div class="error-title">Unable to Load Forms</div>
@@ -48,10 +50,12 @@ async function loadForms() {
   }
 }
 
-// when user clicks “Create …”:
 function openForm(requestTypeId) {
-  // assumes you have static HTML forms under /forms/<requestTypeId>.html
+  // map to your existing static pages under /forms/
   window.location.href = `/forms/${requestTypeId}.html`;
 }
+
+document.addEventListener("DOMContentLoaded", loadForms);
+
 
 document.addEventListener("DOMContentLoaded", loadForms);
