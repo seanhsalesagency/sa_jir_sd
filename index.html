@@ -6,8 +6,6 @@
   <title>Smart Brands Company - Service Desk</title>
   <style>
     /* … all your existing CSS exactly as before … */
-    body { /* … */ }
-    /* (omitted for brevity) */
   </style>
 </head>
 <body>
@@ -25,52 +23,65 @@
     <main id="mainContent">
       <div class="loading-container">
         <div class="spinner"></div>
-        <h2 style="color: #172b4d; margin-bottom: 10px;">Loading Service Desk Forms...</h2>
-        <p style="color: #5e6c84;">Connecting to Jira and retrieving available forms...</p>
+        <h2 style="color: #172b4d; margin-bottom: 10px;">
+          Loading Service Desk Forms...
+        </h2>
+        <p style="color: #5e6c84;">
+          Connecting to Jira and retrieving available forms...
+        </p>
       </div>
     </main>
   </div>
 
   <script>
-    // === point at your sync_jira_forms Lambda endpoint ===
     const LAMBDA_URL = 'https://s4imtdlzhdq7cnnmor7bx4vcmm0banfo.lambda-url.us-east-1.on.aws/';
-    let allForms = [];
 
-    // fetch + render
     async function loadForms() {
       const statusIndicators = document.getElementById('statusIndicators');
       const mainContent      = document.getElementById('mainContent');
 
       try {
-        // show loading
+        // Show fetching state
         statusIndicators.innerHTML = `
           <span class="status-indicator status-loading">
             📡 Fetching Forms…
           </span>
         `;
 
-        // call lambda (no ?action)
-        const res = await fetch(LAMBDA_URL, { headers: { 'Accept': 'application/json' } });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        // Call the sync_jira_forms Lambda (GET, CORS enabled)
+        const res = await fetch(LAMBDA_URL, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' }
+        });
 
-        const forms = await res.json();
-        if (!Array.isArray(forms) || forms.length === 0) {
-          throw new Error('No forms returned');
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`HTTP ${res.status}: ${errText}`);
         }
-        allForms = forms;
 
-        // show success
+        const data = await res.json();
+
+        if (!data.success) {
+          throw new Error(data.message || 'Unknown error from forms API');
+        }
+
+        const forms = data.forms;
+        if (!Array.isArray(forms) || forms.length === 0) {
+          throw new Error('No forms returned from API');
+        }
+
+        // Success indicator
         statusIndicators.innerHTML = `
           <span class="status-indicator status-success">
-            ✅ ${forms.length} Forms Loaded
+            ✅ ${data.totalForms} Forms Loaded
           </span>
         `;
 
-        // render
-        renderForms(allForms);
+        // Render the form cards
+        renderForms(forms);
 
       } catch (err) {
-        console.error(err);
+        console.error('Error loading forms:', err);
         statusIndicators.innerHTML = `
           <span class="status-indicator status-error">
             ❌ Error Loading Forms
@@ -85,7 +96,6 @@
       }
     }
 
-    // tear down forms into cards
     function renderForms(forms) {
       const mainContent = document.getElementById('mainContent');
       let html = '<div class="forms-container">';
@@ -97,12 +107,14 @@
               <h3 class="form-title">${f.title}</h3>
               <p class="form-description">${f.description}</p>
               <div class="form-meta">
-                <span class="field-count">${f.fields.length} fields</span>
+                <span class="field-count">${f.fields.length} fields</span>
               </div>
             </div>
             <div class="form-footer">
-              <button class="form-button" onclick="openForm('${f.id}')">
-                Create ${f.title}
+              <button
+                class="form-button"
+                onclick="openForm('${f.id}', '${f.formType}')">
+                Create ${f.title}
               </button>
             </div>
           </div>
@@ -113,13 +125,11 @@
       mainContent.innerHTML = html;
     }
 
-    // when a card’s “Create …” button is clicked
-    function openForm(formId) {
-      // adjust this path if your form pages live elsewhere
-      window.location.href = `/forms/${formId}.html`;
+    function openForm(formId, formType) {
+      // Adjust this path if your static forms live under /forms/
+      window.location.href = `/forms/${formType}.html`;
     }
 
-    // kick it off
     document.addEventListener('DOMContentLoaded', loadForms);
   </script>
 </body>
