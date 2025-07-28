@@ -1,136 +1,48 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Brands Company - Service Desk</title>
-  <style>
-    /* … all your existing CSS exactly as before … */
-  </style>
-</head>
-<body>
-  <div class="container">
-    <header>
-      <h1>Smart Brands Company</h1>
-      <p class="subtitle">Service Desk Portal</p>
-      <div class="status-indicators" id="statusIndicators">
-        <span class="status-indicator status-loading">
-          🔄 Loading...
-        </span>
-      </div>
-    </header>
+<script>
+  const LAMBDA_URL =
+    "https://s4imtdlzhdq7cnnmor7bx4vcmm0banfo.lambda-url.us-east-1.on.aws/";
 
-    <main id="mainContent">
-      <div class="loading-container">
-        <div class="spinner"></div>
-        <h2 style="color: #172b4d; margin-bottom: 10px;">
-          Loading Service Desk Forms...
-        </h2>
-        <p style="color: #5e6c84;">
-          Connecting to Jira and retrieving available forms...
-        </p>
-      </div>
-    </main>
-  </div>
+  async function loadForms() {
+    const status = document.getElementById("statusIndicators");
+    const main   = document.getElementById("mainContent");
 
-  <script>
-    const LAMBDA_URL = 'https://s4imtdlzhdq7cnnmor7bx4vcmm0banfo.lambda-url.us-east-1.on.aws/';
+    try {
+      status.innerHTML = `📡 Fetching forms…`;
+      const resp = await fetch(LAMBDA_URL);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
 
-    async function loadForms() {
-      const statusIndicators = document.getElementById('statusIndicators');
-      const mainContent      = document.getElementById('mainContent');
+      // build summary
+      status.innerHTML = `✅ ${data.totalForms} forms loaded`;
 
-      try {
-        // Show fetching state
-        statusIndicators.innerHTML = `
-          <span class="status-indicator status-loading">
-            📡 Fetching Forms…
-          </span>
-        `;
+      // optional: show project info / stats here…
 
-        // Call the sync_jira_forms Lambda (GET, CORS enabled)
-        const res = await fetch(LAMBDA_URL, {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' }
-        });
-
-        if (!res.ok) {
-          const errText = await res.text();
-          throw new Error(`HTTP ${res.status}: ${errText}`);
-        }
-
-        const data = await res.json();
-
-        if (!data.success) {
-          throw new Error(data.message || 'Unknown error from forms API');
-        }
-
-        const forms = data.forms;
-        if (!Array.isArray(forms) || forms.length === 0) {
-          throw new Error('No forms returned from API');
-        }
-
-        // Success indicator
-        statusIndicators.innerHTML = `
-          <span class="status-indicator status-success">
-            ✅ ${data.totalForms} Forms Loaded
-          </span>
-        `;
-
-        // Render the form cards
-        renderForms(forms);
-
-      } catch (err) {
-        console.error('Error loading forms:', err);
-        statusIndicators.innerHTML = `
-          <span class="status-indicator status-error">
-            ❌ Error Loading Forms
-          </span>
-        `;
-        mainContent.innerHTML = `
-          <div class="error-container">
-            <div class="error-title">Unable to Load Forms</div>
-            <p>${err.message}</p>
-          </div>
-        `;
-      }
-    }
-
-    function renderForms(forms) {
-      const mainContent = document.getElementById('mainContent');
-      let html = '<div class="forms-container">';
-
-      forms.forEach(f => {
+      // render cards
+      let html = `<div class="forms-container">`;
+      data.forms.forEach((f) => {
         html += `
           <div class="form-card">
-            <div class="form-header">
-              <h3 class="form-title">${f.title}</h3>
-              <p class="form-description">${f.description}</p>
-              <div class="form-meta">
-                <span class="field-count">${f.fields.length} fields</span>
-              </div>
-            </div>
-            <div class="form-footer">
-              <button
-                class="form-button"
-                onclick="openForm('${f.id}', '${f.formType}')">
-                Create ${f.title}
-              </button>
-            </div>
+            <h3>${f.title}</h3>
+            <p>${f.description}</p>
+            <small>${f.fields.length} fields • ${f.issueTypeName}</small>
+            <button onclick="openForm('${f.id}')">Create</button>
           </div>
         `;
       });
-
-      html += '</div>';
-      mainContent.innerHTML = html;
+      html += `</div>`;
+      main.innerHTML = html;
+    } catch (e) {
+      status.innerHTML = `❌ Error: ${e.message}`;
+      main.innerHTML = `<p>${e.message}</p>`;
     }
+  }
 
-    function openForm(formId, formType) {
-      // Adjust this path if your static forms live under /forms/
-      window.location.href = `/forms/${formType}.html`;
-    }
+  function openForm(formId) {
+    // you’ll need to map formId→static HTML form pages, or
+    // build dynamic form UI here.
+    window.location.href = `/forms/${formId}.html`;
+  }
 
-    document.addEventListener('DOMContentLoaded', loadForms);
-  </script>
-</body>
-</html>
+  document.addEventListener("DOMContentLoaded", loadForms);
+</script>
+
