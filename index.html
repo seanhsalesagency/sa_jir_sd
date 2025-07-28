@@ -1,48 +1,30 @@
-<script>
-  const LAMBDA_URL =
-    "https://s4imtdlzhdq7cnnmor7bx4vcmm0banfo.lambda-url.us-east-1.on.aws/";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF‑8">
+  <meta name="viewport" content="width=device‑width, initial‑scale=1.0">
+  <title>Smart Brands Company – Service Desk</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Smart Brands Company</h1>
+      <p class="subtitle">Service Desk Portal</p>
+      <div class="status-indicators" id="statusIndicators">
+        🔄 Loading…
+      </div>
+    </header>
 
-  async function loadForms() {
-    const status = document.getElementById("statusIndicators");
-    const main   = document.getElementById("mainContent");
+    <main id="mainContent">
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <h2>Loading Service Desk Forms…</h2>
+        <p>Connecting to Jira and retrieving available forms…</p>
+      </div>
+    </main>
+  </div>
 
-    try {
-      status.innerHTML = `📡 Fetching forms…`;
-      const resp = await fetch(LAMBDA_URL);
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const data = await resp.json();
-
-      // build summary
-      status.innerHTML = `✅ ${data.totalForms} forms loaded`;
-
-      // optional: show project info / stats here…
-
-      // render cards
-      let html = `<div class="forms-container">`;
-      data.forms.forEach((f) => {
-        html += `
-          <div class="form-card">
-            <h3>${f.title}</h3>
-            <p>${f.description}</p>
-            <small>${f.fields.length} fields • ${f.issueTypeName}</small>
-            <button onclick="openForm('${f.id}')">Create</button>
-          </div>
-        `;
-      });
-      html += `</div>`;
-      main.innerHTML = html;
-    } catch (e) {
-      status.innerHTML = `❌ Error: ${e.message}`;
-      main.innerHTML = `<p>${e.message}</p>`;
-    }
-  }
-
-  function openForm(formId) {
-    // you’ll need to map formId→static HTML form pages, or
-    // build dynamic form UI here.
-    window.location.href = `/forms/${formId}.html`;
-  }
-
-  document.addEventListener("DOMContentLoaded", loadForms);
-</script>
-
+  <script src="app.js"></script>
+</body>
+</html>
